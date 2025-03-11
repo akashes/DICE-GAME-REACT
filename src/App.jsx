@@ -7,12 +7,13 @@ import { useWindowSize } from "react-use";
 import Confetti from "react-confetti";
 function App() {
   let newGameRef = useRef(null);
+  const [isDisabled,setIsDisabled]=useState(false)
 
   const { width, height } = useWindowSize();
 
-  // const[isWon,setIsWon]=useState(false)
   const [dice, setDice] = useState(() => generateNewSetOfDices());
 
+  //local variable stores win status
   const isGameWon =
     dice.every((d) => d.selected) &&
     dice.every((d) => d.value === dice[0].value);
@@ -34,17 +35,7 @@ function App() {
       return;
     }
 
-    console.log("cont..");
-    //check whether all dice have same value
-    let count = 0;
-    dice.map((d) => {
-      if (d.selected === true) {
-        count++;
-      }
-    });
-    if (count === dice.length) {
-      alert("all dice have same value");
-    }
+  
 
     setDice((prevDice) => {
       return prevDice.map((d) => {
@@ -67,8 +58,7 @@ function App() {
 
     dice.map((d) => {
       if (d.selected === true) {
-        console.log(d.value);
-        console.log(newSelected);
+     
         if (d.value != newSelected) {
           // abort from select dice function
           check = false;
@@ -94,13 +84,25 @@ function App() {
   };
   useEffect(() => {
     if(isGameWon){
+
+      setIsDisabled(true)
       newGameRef.current?.focus()
+
+      const timer = setTimeout(() => {
+        setIsDisabled(false); //
+      }, 4000);
+
+      return () => clearTimeout(timer); 
     }
 
   }, [isGameWon]);
   return (
     <main>
+
+      {/* confetti decoration */}
       {isGameWon && <Confetti width={width} height={height} />}
+
+      {/* screen reader only */}
       <div aria-live="polite" className="sr-only">
         {isGameWon && (
           <p>Congratulations! You Won!. Press new game to play again</p>
@@ -130,6 +132,7 @@ function App() {
      
 
         <button
+        disabled={isDisabled}
           ref={newGameRef}
           onClick={rollDice}
           className=" bg-purple-600 text-white rounded-lg   px-3 py-2  shadow-xl bg-gray-100 font-bold "
